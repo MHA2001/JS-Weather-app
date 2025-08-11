@@ -45,8 +45,11 @@ function getIconUrl(icon, { large = false } = {}) {
 	return `http://openweathermap.org/img/wn/${icon}${size}.png`;
 }
 
-function formatDate(timestamp) {
+function formatDay(timestamp) {
 	return format(new Date(timestamp), 'eeee');
+}
+function formatTime(timestamp) {
+	return format(new Date(timestamp), 'ha');
 }
 
 const currentIcon = document.querySelector('[data-current-icon]');
@@ -69,9 +72,28 @@ function renderDailyWeather(daily) {
 	daily.forEach((day) => {
 		const element = dayCardTemplate.content.cloneNode(true);
 		setValue('temp', day.temp, { parent: element });
-		setValue('date', formatDate(day.timestamp), { parent: element });
+		setValue('date', formatDay(day.timestamp), { parent: element });
 		element.querySelector('[data-icon]').src = getIconUrl(day.icon);
 		dailySection.append(element);
 	});
 }
-function renderHourlyWeather(hourly) {}
+
+const hourlySection = document.querySelector('[data-hour-section]');
+const hourRowTemplate = document.getElementById('hour-row-template');
+function renderHourlyWeather(hourly) {
+	hourlySection.innerHTML = '';
+	hourly.forEach((hour) => {
+		const element = hourRowTemplate.content.cloneNode(true);
+
+		setValue('temp', hour.temp, { parent: element });
+		setValue('fl-temp', hour.feelsLike, { parent: element });
+		setValue('wind', hour.windSpeed, { parent: element });
+		setValue('precip', hour.precip, { parent: element });
+		setValue('day', formatDay(hour.timestamp), { parent: element });
+		setValue('time', formatTime(hour.timestamp), { parent: element });
+
+		element.querySelector('[data-icon]').src = getIconUrl(hour.icon);
+
+		hourlySection.append(element);
+	});
+}
