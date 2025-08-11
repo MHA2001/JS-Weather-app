@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { format } from 'date-fns';
 navigator.geolocation.getCurrentPosition(positionSuccess, positionError);
 
 function positionError() {
@@ -36,13 +36,17 @@ function renderWeather({ current, daily, hourly }) {
 	renderDailyWeather(daily);
 }
 
-function setValue(selector, value) {
-	document.querySelector(`[data-${selector}]`).textContent = value;
+function setValue(selector, value, { parent = document } = {}) {
+	parent.querySelector(`[data-${selector}]`).textContent = value;
 }
 
 function getIconUrl(icon, { large = false } = {}) {
 	const size = large ? '@2x' : '';
 	return `http://openweathermap.org/img/wn/${icon}${size}.png`;
+}
+
+function formatDate(timestamp) {
+	return format(new Date(timestamp), 'eeee');
 }
 
 const currentIcon = document.querySelector('[data-current-icon]');
@@ -57,5 +61,17 @@ function renderCurrentWeather(current) {
 	setValue('current-precip', current.precip);
 	setValue('current-description', current.description);
 }
-function renderDailyWeather(daily) {}
+
+const dailySection = document.querySelector('[data-day-section]');
+const dayCardTemplate = document.getElementById('day-card-template');
+function renderDailyWeather(daily) {
+	dailySection.innerHTML = '';
+	daily.forEach((day) => {
+		const element = dayCardTemplate.content.cloneNode(true);
+		setValue('temp', day.temp, { parent: element });
+		setValue('date', formatDate(day.timestamp), { parent: element });
+		element.querySelector('[data-icon]').src = getIconUrl(day.icon);
+		dailySection.append(element);
+	});
+}
 function renderHourlyWeather(hourly) {}
